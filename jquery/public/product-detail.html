@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Document</title>
+    <link rel="stylesheet" href="css/product-detail.css" />
+  </head>
+  <body>
+    <div class="header">
+      <a href="/">
+        <button>
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="1em"
+            viewBox="0 0 512 512"
+          >
+            <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+            <path
+              d="M177.5 414c-8.8 3.8-19 2-26-4.6l-144-136C2.7 268.9 0 262.6 0 256s2.7-12.9 7.5-17.4l144-136c7-6.6 17.2-8.4 26-4.6s14.5 12.5 14.5 22l0 72 288 0c17.7 0 32 14.3 32 32l0 64c0 17.7-14.3 32-32 32l-288 0 0 72c0 9.6-5.7 18.2-14.5 22z"
+            />
+          </svg>
+        </button>
+      </a>
+      <p>Detail</p>
+      <button>
+        <svg
+          xmlns="http://www.w3.org/2000/svg"
+          height="1em"
+          viewBox="0 0 448 512"
+        >
+          <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+          <path
+            d="M8 256a56 56 0 1 1 112 0A56 56 0 1 1 8 256zm160 0a56 56 0 1 1 112 0 56 56 0 1 1 -112 0zm216-56a56 56 0 1 1 0 112 56 56 0 1 1 0-112z"
+          />
+        </svg>
+      </button>
+    </div>
+    <div id="product-image-container">
+      <img src="" alt="" id="product-image" />
+    </div>
+    <div id="product-details">
+      <div class="footer">
+        <button class="go-to-cart">
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            height="1em"
+            viewBox="0 0 576 512"
+          >
+            <!--! Font Awesome Free 6.4.0 by @fontawesome - https://fontawesome.com License - https://fontawesome.com/license (Commercial License) Copyright 2023 Fonticons, Inc. -->
+            <path
+              d="M0 24C0 10.7 10.7 0 24 0H69.5c22 0 41.5 12.8 50.6 32h411c26.3 0 45.5 25 38.6 50.4l-41 152.3c-8.5 31.4-37 53.3-69.5 53.3H170.7l5.4 28.5c2.2 11.3 12.1 19.5 23.6 19.5H488c13.3 0 24 10.7 24 24s-10.7 24-24 24H199.7c-34.6 0-64.3-24.6-70.7-58.5L77.4 54.5c-.7-3.8-4-6.5-7.9-6.5H24C10.7 48 0 37.3 0 24zM128 464a48 48 0 1 1 96 0 48 48 0 1 1 -96 0zm336-48a48 48 0 1 1 0 96 48 48 0 1 1 0-96z"
+            />
+          </svg>
+        </button>
+        <button class="add-to-cart">Add to cart</button>
+      </div>
+    </div>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+    <script>
+      $(document).ready(() => {
+        (async function () {
+          // Given a URL with format example.com/123productBrand we need to extract the product ID
+          const url = window.location.href.split("/").pop();
+          const id = url.match(/[0-9]+/)[0];
+
+          const fetchURL = `/api/products/${id}`;
+
+          const product = await fetch(fetchURL)
+            .then((res) => res.json())
+            .then((data) => data[0]);
+          let skuCode = product.skus[0].code;
+
+          $("#product-image").attr("src", product.image);
+          let productDetailsContainer = $("#product-details");
+
+          // Create title section
+          const titleSection = $("<div>").addClass("title");
+
+          const productName = $("<h2>").text(product.brand);
+
+          const productPrice = $("<h3>").text(
+            `$${(product.price / 100).toFixed(2)}`
+          );
+
+          titleSection.append(productName);
+          titleSection.append(productPrice);
+
+          // Create stock section
+          const stockSection = $("<div>").addClass("stock");
+          stockSection.text(`Origin: ${product.origin} | Stock: `);
+          const stockAmount = $("<span>")
+            .addClass("stock-amount")
+            .text(product.stock);
+          stockSection.append(stockAmount);
+
+          // Create description section
+          const descriptionSection = $("<div>").addClass("description");
+
+          const descriptionTitle = $("<h3>").text("Description");
+
+          const descriptionText = $("<p>").text(product.information);
+
+          descriptionSection.append(descriptionTitle);
+          descriptionSection.append(descriptionText);
+
+          // Create size section
+          const sizeSection = $("<div>").addClass("size");
+
+          const sizeTitle = $("<h3>").text("Size");
+
+          const sizesContainer = $("<div>").addClass("sizes");
+
+          // Create size buttons - these buttons will also set the sku and change price/stock
+          product.skus.forEach((sku) => {
+            const sizeButton = $("<button>")
+              .addClass("size-btn")
+              .attr("alt", sku.code)
+              .click(() => {
+                updateStock(sku.code);
+                activateButton(sizeButton);
+              })
+              .text(sku.name);
+
+            sizesContainer.append(sizeButton);
+          });
+
+          sizeSection.append(sizeTitle);
+          sizeSection.append(sizesContainer);
+
+          // Append all sections to the main container
+          productDetailsContainer.prepend(sizeSection);
+          productDetailsContainer.prepend(descriptionSection);
+          productDetailsContainer.prepend(stockSection);
+          productDetailsContainer.prepend(titleSection);
+
+          // FUNCTION TO UPDATE PRODUCT STOCK AND PRICE
+          async function updateStock(sku) {
+            skuCode = sku;
+            const product = await fetch(fetchURL + "?sku=" + sku)
+              .then((res) => res.json())
+              .then((data) => data[0]);
+            $(".title h3").text(`$${(product.price / 100).toFixed(2)}`);
+            $(".stock-amount").text(product.stock);
+          }
+          //Handles class active on selected size button
+          function activateButton(button) {
+            $(".size-btn").removeClass("active"); // Remove the active class from all buttons
+            $(button).addClass("active"); // Add the active class to the clicked button
+          }
+          $(".size-btn").click(function () {
+            activateButton(this);
+          });
+          // PRODUCT PRICE AND STOCK WILL UPDATE EVERY 5 SECONDS
+          setInterval(() => {
+            updateStock(skuCode);
+          }, 5000);
+        })();
+      });
+    </script>
+  </body>
+</html>

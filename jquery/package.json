@@ -1,0 +1,16 @@
+{
+  "name": "web-dev-challenge",
+  "version": "1.0.0",
+  "description": "In this situation, since the endpoint provided is /api/stockprice/code I will have to fetch the individual stock per product(for all the products) every 5 seconds. I will do this. But ideally I would fetch all products and all prices (2 endpoint calls), and then do a endpoint call every 5 seconds and update prices.\r This would be much easier in React :P",
+  "main": "server.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "node server.js"
+  },
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "express": "^4.18.2",
+    "fs": "^0.0.1-security"
+  }
+}
